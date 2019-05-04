@@ -236,3 +236,127 @@ def sum_odd_square_tree_2(tree):
 
 
 
+### 斐波那契奇数列表改造
+
+``````python
+# ############################################
+# 流-数据抽象
+# 构造函数
+def cons_stream(x, y):
+    return [x, y]
+
+
+def cons_empty_stream():
+    return []
+
+
+# 选择函数
+def get_head(s):
+    return s[0]
+
+
+def get_tail(s):
+    return s[1]
+
+
+def is_empty_stream(s):
+    if len(s) == 0:
+        return True
+    else:
+        return False
+
+
+# 对流的头部进行proc处理
+# 递归尾部并且进行proc处理
+# 合成新的流
+def map_stream(proc, s):
+    if is_empty_stream(s):
+        return cons_empty_stream()
+    else:
+        return cons_stream(
+            proc(get_head(s)),
+            map_stream(proc, get_tail(s))
+        )
+
+# 对头进行过滤判断
+# 递归尾部，进行过滤判断
+# 组成新的流
+def filter_stream(pred, s):
+    if is_empty_stream(s):
+        return cons_empty_stream()
+    else:
+        if pred(get_head(s)):
+            return cons_stream(
+                get_head(s),
+                filter_stream(pred, get_tail(s))
+            )
+        else:
+            return filter_stream(pred, get_tail(s))
+
+
+# 累积函数
+def accumulate(combiner, init_val, s):
+    if is_empty_stream(s):
+        return init_val
+    else:
+        a1 = combiner(
+            get_head(s),
+            accumulate(combiner, init_val, get_tail(s))
+        )
+        return a1
+# ############################################
+
+def fib(n):
+    if n == 0:
+        return 0
+    elif n == 1 or n == 2:
+        return 1
+    else:
+        return fib(n-1) + fib(n-2)
+
+def enmu_interval(low, high):
+    if low > high:
+        return cons_empty_stream()
+    else:
+        return cons_stream(
+            low,
+            enmu_interval(low+1, high)
+        )
+
+def is_odd(c):
+    if c % 2 != 0:
+        return True
+    else:
+        return False
+
+def t():
+    # for i in range(1, 10):
+    #     print(i, fib(i))
+
+    # assert enmu_interval(1, 2) == [1, [2, []]]
+    # assert enmu_interval(2, 6) == [2, [3, [4, [5, [6,[]]]]]]
+
+    # assert map_stream(fib, [1, [2, []]]) == [1, [1, []]]
+    # assert map_stream(fib, [2, [3, [4, [5, [6,[]]]]]]) == [1, [2, [3, [5, [8, []]]]]]
+
+    # assert filter_stream(is_odd, [1, [1, []]]) == [1, [1, []]]
+    # assert filter_stream(is_odd, [2, [3, [4, [5, [6, []]]]]]) == [3, [5, []]]
+
+    print(
+        accumulate(             # 累积
+            cons_stream,        
+            [], 
+            filter_stream(
+                is_odd,          # 过滤奇数
+                map_stream(fib,  # 取斐波那契值
+                           enmu_interval(2, 6)) # 枚举
+            )
+        )
+    )
+
+    print("Test Finished!")
+
+
+t()
+``````
+
